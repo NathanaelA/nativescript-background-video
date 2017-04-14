@@ -1,6 +1,13 @@
+/**********************************************************************************
+ * (c) 2017, Master Technology
+ * Licensed under a MIT License
+ *
+ * Any questions please feel free to email me or put a issue up on the private repo
+ * Version 0.1.0                                      Nathan@master-technology.com
+ *********************************************************************************/
 "use strict";
 
-/* global NSObject, NSString, NSMutableDictionary, MTVideoDelegate, VideoHelper, Promise */
+/* global NSObject, NSString, NSMutableDictionary, MTVideoDelegate, VideoHelper, Promise, AVURLAsset, NSNull */
 
 var delegateId = 0;
 var _VideoDelegate = NSObject.extend({
@@ -58,25 +65,31 @@ Object.defineProperty(Preloader.prototype, "autoCancel", {
 	set: function(val) { this._autoCancel = val; }
 });
 
-Preloader.prototype.downloadVideo = function(fileName, bitRate, callback) {
+Preloader.prototype.downloadVideo = function(fileName, bitRate, title, callback) {
 	var self = this;
+	if (typeof title === 'function') {
+		callback = title;
+		title = "downloadedMedia";
+	} else if (title == null) {
+		title = "downloadedMedia";
+	}
 	return new Promise(function (resolve, reject) {
 		// We don't need to keep sending this unless it has changed since the last time we sent it...
 		if (self._lastSentAutoCancel !== self._autoCancel) {
 			self._lastSentAutoCancel = self._autoCancel;
-			self._sendMessage(COMMAND.SETTING, "autoCancel", self._autoCancel);
+			self._sendMessage(COMMAND.SETTING, "autoCancel", self._autoCancel, "");
 		}
-		self._sendMessage(COMMAND.DOWNLOAD, fileName, bitRate, {resolve: resolve, reject: reject, callback: callback});
+		self._sendMessage(COMMAND.DOWNLOAD, fileName, bitRate, title, {resolve: resolve, reject: reject, callback: callback});
 	});
 };
 
 Preloader.prototype.cancel = function() {
-	this._sendMessage(COMMAND.CANCEL, "", 0);
+	this._sendMessage(COMMAND.CANCEL, "", 0, "");
 };
 
 Preloader.prototype.quit = function() {
 
-	this._sendMessage(COMMAND.QUIT, "", 0);
+	this._sendMessage(COMMAND.QUIT, "", 0, "");
 
 	// Clear anything
 	this._delegate.wrapper = null;
@@ -85,7 +98,7 @@ Preloader.prototype.quit = function() {
 	this._video =  null;
 };
 
-Preloader.prototype._sendMessage = function(command, dataString, dataNumber, promise) {
+Preloader.prototype._sendMessage = function(command, dataString, dataNumber, title, promise) {
 	if (this._debugging) {
 		console.log("iOS SendMessage: ", command, "Promise Id", promise ? (this._commId+1) : "none");
 	}
@@ -106,9 +119,19 @@ Preloader.prototype._sendMessage = function(command, dataString, dataNumber, pro
 
 	//noinspection EqualityComparisonWithCoercionJS
 	if (dataString == null) { dataString = ""; } // jshint ignore:line
+	if (dataString instanceof AVURLAsset) { // jshint ignore:line
+		//noinspection JSUnresolvedFunction
+		transfer.setObjectForKey(dataString, 'AVAsset');
+		transfer.setObjectForKey(NSString.alloc().initWithString(""), 'dataString');
+
+	} else {
+		//noinspection JSUnresolvedFunction
+		transfer.setObjectForKey(NSNull.null(), 'AVAsset');
+		transfer.setObjectForKey(NSString.alloc().initWithString(dataString), 'dataString');
+	}
 
 	//noinspection JSUnresolvedFunction
-	transfer.setObjectForKey(NSString.alloc().initWithString(dataString), 'dataString');
+	transfer.setObjectForKey(NSString.alloc().initWithString(title), 'dataTitle');
 
 	//noinspection JSUnresolvedFunction
 	transfer.setObjectForKey(dataNumber, 'dataNumber');
