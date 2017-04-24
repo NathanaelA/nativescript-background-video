@@ -3,7 +3,7 @@
  * Licensed under a MIT License
  *
  * Any questions please feel free to email me or put a issue up on the private repo
- * Version 0.1.0                                      Nathan@master-technology.com
+ * Version 0.1.1                                      Nathan@master-technology.com
  *********************************************************************************/
 "use strict";
 
@@ -109,7 +109,7 @@ Preloader.prototype._sendMessage = function(command, dataString, dataNumber, tit
 		transfer.setObjectForKey(this._commId, 'id');
 
 		this._promiseCount++;
-		this._commPromises[this._commId] = promise;
+		this._commPromises[this._commId] = {p: promise, t: title};
 	} else {
 		//noinspection JSUnresolvedFunction
 		transfer.setObjectForKey(0, 'id');
@@ -145,11 +145,12 @@ Preloader.prototype._onEvent = function (id, data, bitRate, isError) {
 	if (this._debugging) {
 		console.log("Got Event", id, "File:", data, "BR:", bitRate, "Error:", isError, "Promises left:", this._promiseCount);
 	}
-	var promise;
+	var promise, title = "";
 	if (id === 0) {  // We aren't tracking this request
 		return;
 	} else if (this._commPromises[id]) {
-		promise = this._commPromises[id];
+		promise = this._commPromises[id].p;
+		title = this._commPromisses[id].t;
 		delete this._commPromises[id];
 		this._promiseCount--;
 	} else {
@@ -165,16 +166,13 @@ Preloader.prototype._onEvent = function (id, data, bitRate, isError) {
 		return;
 	}
 	if (isError) {
-		if (typeof promise.callback === 'function') {
-			promise.callback(data);
-		}
 		promise.reject(data);
 	} else {
 		// Data comes as "value" so we have to remove the Quotes
 		if (data && data.length) {
 			data = data.replace(/"/g, '');
 		}
-		var results = {file: data, bitRate: bitRate};
+		var results = {file: data, bitRate: bitRate, title: title};
 		if (typeof promise.callback === 'function') {
 			promise.callback(null, results);
 		}
