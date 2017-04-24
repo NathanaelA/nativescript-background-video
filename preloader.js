@@ -150,7 +150,7 @@ Preloader.prototype._onEvent = function (id, data, bitRate, isError) {
 		return;
 	} else if (this._commPromises[id]) {
 		promise = this._commPromises[id].p;
-		title = this._commPromisses[id].t;
+		title = this._commPromises[id].t;
 		delete this._commPromises[id];
 		this._promiseCount--;
 	} else {

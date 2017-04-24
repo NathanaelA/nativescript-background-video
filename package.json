@@ -1,6 +1,6 @@
 {
   "name": "nativescript-background-video",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Downloads video's in the background on iOS",
   "main": "preloader",
   "nativescript": {
