@@ -1,0 +1,26 @@
+
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="onNavigatingTo" class="page">
+
+    <ActionBar title="Preload test" icon="" class="action-bar"/>
+
+    <StackLayout class="p-20">
+        <StackLayout orientation="horizontal">
+            <Label text="Currently Running:"/>
+            <Label text="{{completed}}"/>
+            <Label text="/"/>
+            <Label text="{{total}}"/>
+        </StackLayout>
+        <Button text="Start 100" tap="start" class="btn btn-primary btn-active"/>
+        <Button text="Quit" tap="quit" class="btn btn-primary btn-active"/>
+
+        <ListView items="{{listview}}">
+            <ListView.itemTemplate>
+                <StackLayout orientation="horizontal">
+                    <Label text="{{id}}" class="id"/>
+                    <Label text="{{ title }}" class="title" />
+                    <Label text="{{ desc }}"  class="desc" />
+                </StackLayout>
+            </ListView.itemTemplate>
+        </ListView>
+    </StackLayout>
+</Page>
